@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storyteller</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#f5f0e8">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <noscript>
+    <p>Storyteller requires JavaScript to run. Please enable JavaScript in your browser.</p>
+  </noscript>
+
+  <!-- Global floating menu -->
+  <button id="global-menu-btn" aria-label="Menu">
+    <svg class="icon"><use href="#icon-menu"/></svg>
+  </button>
+  <div id="global-menu" hidden>
+    <button id="global-new-story-btn" data-i18n="menuNewStory">✨ New Story</button>
+    <button id="global-replay-btn" data-i18n="menuReplay">🔁 Replay Story</button>
+    <button id="global-fullscreen-btn" data-i18n="menuFullscreen">⛶ Fullscreen</button>
+    <button id="global-images-btn" data-i18n="menuImages">🖼️ ✔ Generate Images</button>
+  </div>
+
+  <!-- Replay Story Dialog -->
+  <div id="replay-dialog" hidden>
+    <div class="replay-dialog-content">
+      <div class="replay-dialog-header">
+        <h2 id="replay-dialog-title" data-i18n="replayTitle">Replay a Story</h2>
+        <button id="replay-dialog-close" aria-label="Close">✕</button>
+      </div>
+      <ul id="replay-story-list"></ul>
+      <p id="replay-empty" hidden data-i18n="replayEmpty">No stories yet</p>
+    </div>
+  </div>
+
+  <!-- Inline SVG Icons -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="icon-mic" viewBox="0 0 24 24">
+      <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+      <path d="M19 11a7 7 0 0 1-14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="12" y1="18" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
+  <!-- Language Selection Screen -->
+  <section id="language-screen" aria-label="Language selection">
+    <div class="language-screen-inner">
+      <h1 class="language-title">Storyteller</h1>
+      <p class="language-subtitle">Choose your language / Valitse kieli</p>
+      <div class="language-buttons">
+        <button class="lang-btn" data-lang="en" aria-label="English">
+          <svg class="lang-flag" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="60" height="40" rx="4" fill="#003078"/>
+            <text x="30" y="26" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="18" font-weight="bold">EN</text>
+          </svg>
+          <span class="lang-label">English</span>
+        </button>
+        <button class="lang-btn" data-lang="fi" aria-label="Suomi">
+          <svg class="lang-flag" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="60" height="40" fill="#fff"/>
+            <rect x="16" width="8" height="40" fill="#003580"/>
+            <rect y="16" width="60" height="8" fill="#003580"/>
+          </svg>
+          <span class="lang-label">Suomi</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Audience Selection -->
+  <section id="audience-screen" hidden aria-label="Audience selection">
+    <div class="language-card">
+      <h1 class="language-title" data-i18n="appTitle">Storyteller</h1>
+      <p class="language-subtitle" data-i18n="audienceTitle">Who is this story for?</p>
+      <div class="audience-buttons">
+        <button class="audience-btn" data-audience="children">
+          <span class="audience-emoji">👶</span>
+          <span class="audience-label" data-i18n="audienceChildren">For Children</span>
+          <span class="audience-desc" data-i18n="audienceChildrenDesc">Simple words, safe & gentle themes</span>
+        </button>
+        <button class="audience-btn" data-audience="everyone">
+          <span class="audience-emoji">📖</span>
+          <span class="audience-label" data-i18n="audienceEveryone">For Everyone</span>
+          <span class="audience-desc" data-i18n="audienceEveryoneDesc">Richer vocabulary, all themes welcome</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Story Length Selection -->
+  <section id="length-screen" hidden aria-label="Story length selection">
+    <div class="language-card">
+      <h1 class="language-title" data-i18n="appTitle">Storyteller</h1>
+      <p class="language-subtitle" data-i18n="lengthTitle">How long should each part be?</p>
+      <div class="audience-buttons">
+        <button class="audience-btn" data-length="short">
+          <span class="audience-emoji">⚡</span>
+          <span class="audience-label" data-i18n="lengthShort">Short</span>
+          <span class="audience-desc" data-i18n="lengthShortDesc">A few sentences — quick & interactive</span>
+        </button>
+        <button class="audience-btn" data-length="medium">
+          <span class="audience-emoji">📄</span>
+          <span class="audience-label" data-i18n="lengthMedium">Medium</span>
+          <span class="audience-desc" data-i18n="lengthMediumDesc">A short paragraph — more detail</span>
+        </button>
+        <button class="audience-btn" data-length="long">
+          <span class="audience-emoji">📖</span>
+          <span class="audience-label" data-i18n="lengthLong">Long</span>
+          <span class="audience-desc" data-i18n="lengthLongDesc">A full scene — sit back and listen</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Story Setup Wizard -->
+  <section id="wizard-screen" hidden aria-label="Story setup">
+    <div class="wizard-inner">
+      <h1 class="wizard-title" data-i18n="appTitle">Storyteller</h1>
+
+      <!-- Step indicators -->
+      <div class="wizard-steps-indicator">
+        <span class="step-dot active" data-step="1"></span>
+        <span class="step-dot" data-step="2"></span>
+        <span class="step-dot" data-step="3"></span>
+      </div>
+
+      <!-- Step 1: Genre -->
+      <div class="wizard-step" id="wizard-step-1">
+        <h2 class="wizard-step-title" data-i18n="wizardStep1"></h2>
+        <div class="wizard-tags" id="wizard-tags-1"></div>
+        <div class="wizard-own-divider"><span data-i18n="wizardOr">— or —</span></div>
+        <button class="wizard-own-btn" id="wizard-own-btn" data-i18n="wizardOwnStory">🎤 Tell your own story</button>
+      </div>
+
+      <!-- Step 2: Setting (driven by genre) -->
+      <div class="wizard-step" id="wizard-step-2" hidden>
+        <h2 class="wizard-step-title" data-i18n="wizardStep2"></h2>
+        <div class="wizard-tags" id="wizard-tags-2"></div>
+        <button class="wizard-back" id="wizard-back-2" data-i18n="wizardBack">← Back</button>
+      </div>
+
+      <!-- Step 3: Character/Theme (driven by setting) -->
+      <div class="wizard-step" id="wizard-step-3" hidden>
+        <h2 class="wizard-step-title" data-i18n="wizardStep3"></h2>
+        <div class="wizard-tags" id="wizard-tags-3"></div>
+        <button class="wizard-back" id="wizard-back-3" data-i18n="wizardBack">← Back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main App Container -->
+  <main id="app" hidden>
+
+    <!-- Header -->
+    <header id="header" hidden>
+      <h1 class="app-title" data-i18n="appTitle">Storyteller</h1>
+    </header>
+
+    <!-- Story List Sidebar -->
+    <aside id="sidebar" aria-label="Story list">
+      <div class="sidebar-header">
+        <h2 data-i18n="stories">Stories</h2>
+        <button id="sidebar-close" aria-label="Close story list">
+          <svg class="icon"><use href="#icon-close"/></svg>
+        </button>
+      </div>
+      <button id="new-story-btn" data-i18n="newStory">+ New Story</button>
+      <ul id="story-list" aria-label="Previous stories">
+        <!-- Story items loaded from API -->
+      </ul>
+    </aside>
+
+    <!-- Story Canvas -->
+    <section id="story-canvas" aria-live="polite">
+      <div class="welcome-message" data-i18n="welcome">
+        Tap the microphone and tell me what kind of story you'd like to hear
+      </div>
+      <!-- Story steps are appended here as pages -->
+    </section>
+
+    <!-- Subtitle Bar -->
+    <div id="subtitle-bar" hidden aria-live="polite">
+      <p id="subtitle-text"></p>
+    </div>
+
+    <!-- Microphone Area -->
+    <div id="mic-area">
+      <button id="mic-btn" aria-label="Record voice">
+        <svg class="icon mic-icon"><use href="#icon-mic"/></svg>
+      </button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" hidden aria-live="assertive">
+      <div class="loading-inner">
+        <div class="loading-spinner"></div>
+        <p data-i18n="loading">Creating your story…</p>
+      </div>
+    </div>
+
+    <!-- Fullscreen Story Image Overlay -->
+    <div id="fullscreen-overlay" hidden>
+      <img id="fullscreen-img" alt="Story illustration">
+    </div>
+
+  </main>
+
+  <script src="/js/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
