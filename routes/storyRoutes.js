@@ -16,7 +16,7 @@ const imageStatus = new Map();
 // POST /api/story/create — Create a story from manual text input with --- step dividers
 router.post('/story/create', async (req, res) => {
   try {
-    const { language, title, body } = req.body;
+    const { language, title, body, backgroundDescription } = req.body;
     if (!language || !title || !body) {
       return res.status(400).json({ error: 'Missing required fields: language, title, body' });
     }
@@ -30,13 +30,15 @@ router.post('/story/create', async (req, res) => {
       return res.status(400).json({ error: 'No story content found' });
     }
 
-    // Generate image prompts for all steps in parallel
-    const imagePrompts = await Promise.all(
-      stepTexts.map(text => generateImagePrompt({ text, language }))
-    );
+    // Generate image prompts sequentially so each step has cumulative context
+    const imagePrompts = [];
+    for (const text of stepTexts) {
+      const prompt = await generateImagePrompt({ text, language, backgroundDescription, priorImagePrompts: imagePrompts });
+      imagePrompts.push(prompt);
+    }
 
     // Create story record
-    const story = await createStory({ title, language, genre: 'custom', theme: '', setting: '', characterName: '' });
+    const story = await createStory({ title, language, genre: 'custom', theme: '', setting: '', characterName: '', backgroundDescription });
     const storyId = story.id;
     const storyFolder = await getStoryFolder(storyId);
 

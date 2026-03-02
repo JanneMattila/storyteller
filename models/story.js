@@ -18,7 +18,7 @@ function slugify(text) {
     .replace(/^-|-$/g, '');
 }
 
-export async function createStory({ title, language, genre, theme, setting, characterName }) {
+export async function createStory({ title, language, genre, theme, setting, characterName, backgroundDescription }) {
   await ensureStoriesDir();
 
   const id = crypto.randomUUID();
@@ -37,6 +37,7 @@ export async function createStory({ title, language, genre, theme, setting, char
     theme,
     setting,
     characterName,
+    backgroundDescription: backgroundDescription || undefined,
     folderName,
     steps: [],
     conversationHistory: [],
@@ -60,8 +61,8 @@ export async function getStory(storyId) {
     try {
       const data = JSON.parse(await fs.readFile(jsonPath, 'utf-8'));
       if (data.id === storyId) return data;
-    } catch {
-      // skip folders without valid story.json
+    } catch (err) {
+      console.warn(`Skipping story folder "${entry.name}": ${err.message}`);
     }
   }
   return null;
@@ -122,11 +123,11 @@ export async function listStories() {
         language: data.language,
         genre: data.genre,
         folderName: data.folderName,
-        stepCount: data.steps.length,
+        stepCount: Array.isArray(data.steps) ? data.steps.length : 0,
         createdAt: data.createdAt,
       });
-    } catch {
-      // skip invalid entries
+    } catch (err) {
+      console.warn(`Skipping story folder "${entry.name}": ${err.message}`);
     }
   }
 

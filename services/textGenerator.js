@@ -160,13 +160,32 @@ Rewrite this as a single smooth story passage where the chosen direction natural
 /**
  * Generate an image prompt from a story step's text.
  * Returns a 1-sentence English description suitable for DALL-E.
+ *
+ * @param {string} text - The story step text
+ * @param {string} language - Language code
+ * @param {string} [backgroundDescription] - Overall visual style guidance for consistent illustrations
+ * @param {string[]} [priorImagePrompts] - Image prompts from previous steps for visual continuity
  */
-export async function generateImagePrompt({ text, language }) {
+export async function generateImagePrompt({ text, language, backgroundDescription, priorImagePrompts }) {
+  const systemParts = [
+    'You are an image prompt writer for a storybook illustration series.',
+  ];
+
+  if (backgroundDescription) {
+    systemParts.push(`The overall visual style for ALL illustrations in this story is: "${backgroundDescription}". You MUST maintain this style consistently.`);
+  }
+
+  if (priorImagePrompts && priorImagePrompts.length > 0) {
+    systemParts.push(`Previous illustrations in this story were: ${priorImagePrompts.map((p, i) => `[Step ${i + 1}] ${p}`).join(' | ')}. Maintain visual consistency with these — same character appearances, same art style, same color palette.`);
+  }
+
+  systemParts.push('Given a passage of story text, write exactly ONE sentence in English describing the scene visually for an illustration. Focus on characters, setting, mood, and action. Return ONLY the prompt sentence, nothing else.');
+
   const response = await client.chat.completions.create({
     messages: [
       {
         role: 'system',
-        content: 'You are an image prompt writer. Given a passage of story text, write exactly ONE sentence in English describing the scene visually for an illustration. Focus on characters, setting, mood, and action. Return ONLY the prompt sentence, nothing else.',
+        content: systemParts.join(' '),
       },
       {
         role: 'user',

@@ -5,6 +5,7 @@
 
   const langButtons = document.querySelectorAll('#lang-buttons .lang-btn');
   const titleInput = document.getElementById('story-title');
+  const illustrationStyleInput = document.getElementById('illustration-style');
   const bodyInput = document.getElementById('story-body');
   const submitBtn = document.getElementById('submit-btn');
   const progressArea = document.getElementById('progress-area');
@@ -36,10 +37,12 @@
 
     const title = titleInput.value.trim();
     const body = bodyInput.value.trim();
+    const backgroundDescription = illustrationStyleInput.value.trim();
 
     // Disable form
     submitBtn.disabled = true;
     titleInput.disabled = true;
+    illustrationStyleInput.disabled = true;
     bodyInput.disabled = true;
     langButtons.forEach(b => (b.disabled = true));
 
@@ -62,7 +65,7 @@
       const res = await fetch('/api/story/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language: selectedLanguage, title, body }),
+        body: JSON.stringify({ language: selectedLanguage, title, body, backgroundDescription: backgroundDescription || undefined }),
       });
 
       if (!res.ok) {
@@ -94,6 +97,7 @@
       // Re-enable form
       submitBtn.disabled = false;
       titleInput.disabled = false;
+      illustrationStyleInput.disabled = false;
       bodyInput.disabled = false;
       langButtons.forEach(b => (b.disabled = false));
       updateSubmitState();
