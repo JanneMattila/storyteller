@@ -774,6 +774,8 @@ body.story-mode {
   right: 0;
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 1rem;
   padding: 1.25rem 1rem 1.75rem;
   z-index: 520;
   pointer-events: none;
@@ -789,6 +791,36 @@ body.story-mode {
 }
 
 /* ---------- 9. Mic Button ---------- */
+#undo-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(92, 64, 51, 0.75);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(92, 64, 51, 0.25);
+  transition: background 0.2s, transform 0.15s;
+}
+
+#undo-btn[hidden] {
+  display: none;
+}
+
+#undo-btn:hover {
+  background: rgba(92, 64, 51, 0.95);
+  transform: scale(1.08);
+}
+
+#undo-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
 #mic-btn {
   width: 80px;
   height: 80px;
@@ -1155,6 +1187,16 @@ body.story-mode .loading-spinner {
   #mic-btn svg {
     width: 28px;
     height: 28px;
+  }
+
+  #undo-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  #undo-btn svg {
+    width: 18px;
+    height: 18px;
   }
 
   #subtitle-bar {

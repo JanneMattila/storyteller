@@ -32,6 +32,7 @@
   let generateImages = true;  // whether to generate images for story steps
   let isRecording = false;
   let finalTranscript = '';
+  let undoRequested = false;
 
   // Wizard state
   let wizardGenre = null;    // selected genre entry
@@ -706,6 +707,7 @@
   const subtitleText = document.getElementById('subtitle-text');
   const micArea = document.getElementById('mic-area');
   const micBtn = document.getElementById('mic-btn');
+  const undoBtn = document.getElementById('undo-btn');
   const loading = document.getElementById('loading');
 
   // Wizard DOM
@@ -1213,6 +1215,13 @@
     }
   });
 
+  // ── Undo Button ──
+  undoBtn.addEventListener('click', function () {
+    undoRequested = true;
+    stopRecording();
+    hideSubtitle();
+  });
+
   async function startRecording() {
     log('STT', 'Starting recording...');
     // Stop any ongoing TTS playback
@@ -1293,7 +1302,12 @@
         speechRecognizer = null;
       }
 
-      if (finalTranscript.trim()) {
+      if (undoRequested) {
+        undoRequested = false;
+        finalTranscript = '';
+        showMic();
+        hideSubtitle();
+      } else if (finalTranscript.trim()) {
         submitVoiceInput();
       } else {
         showToast(i18n[currentLanguage].noSpeechDetected, 'warning');
@@ -1306,6 +1320,7 @@
       function () {
         isRecording = true;
         micBtn.classList.add('recording');
+        undoBtn.hidden = false;
         requestWakeLock();
         showSubtitle(i18n[currentLanguage].listening || '🎙️ ...');
       },
@@ -1320,6 +1335,7 @@
   function stopRecording() {
     isRecording = false;
     micBtn.classList.remove('recording');
+    undoBtn.hidden = true;
     releaseWakeLock();
     if (speechRecognizer) {
       speechRecognizer.stopContinuousRecognitionAsync(
@@ -1714,6 +1730,8 @@
     hideFullscreenImage();
     document.getElementById('header').hidden = true;
     hideSubtitle();
+    hideLoading();
+    micArea.classList.remove('auto-hide');
     closeSidebar();
     showMenuButton();
     document.body.classList.remove('story-mode');

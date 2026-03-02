@@ -11,10 +11,10 @@ const COG_ENDPOINT = (process.env.AZURE_SPEECH_ENDPOINT || process.env.FOUNDRY_E
   ?.replace(/\/+$/, '');
 const SPEECH_REGION = process.env.AZURE_SPEECH_REGION || 'swedencentral';
 
-// Best available voices
+// Best available voice — Andrew DragonHD is multilingual
 const VOICES = {
-  en: 'en-US-Ava:DragonHDLatestNeural',   // latest HD, warm & expressive
-  fi: 'fi-FI-SelmaNeural',                 // best Finnish female voice
+  en: 'en-US-Andrew:DragonHDLatestNeural',
+  fi: 'en-US-Andrew:DragonHDLatestNeural',
 };
 
 /**
@@ -34,7 +34,7 @@ export async function textToSpeech(text, language) {
     headers: {
       'Ocp-Apim-Subscription-Key': SPEECH_KEY,
       'Content-Type': 'application/ssml+xml',
-      'X-Microsoft-OutputFormat': 'audio-24khz-96kbitrate-mono-mp3',
+      'X-Microsoft-OutputFormat': 'audio-48khz-192kbitrate-mono-mp3',
     },
     body: ssml,
   });
