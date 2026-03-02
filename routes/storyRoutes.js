@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import { createStory, getStory, updateStory, addStep, listStories, getStoryFolder } from '../models/story.js';
-import { generateStoryStart, generateStoryNext, generateReplayNarration } from '../services/textGenerator.js';
+import { generateStoryStart, generateStoryNext, generateReplayNarration, generateImagePrompt } from '../services/textGenerator.js';
 import { generateImage } from '../services/imageGenerator.js';
 import { textToSpeech, speechToText, getSpeechToken } from '../services/speechService.js';
 
@@ -12,6 +12,68 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 
 
 // Track background image generation status: key = "storyId/filename", value = 'pending' | 'done' | 'failed'
 const imageStatus = new Map();
+
+// POST /api/story/create — Create a story from manual text input with --- step dividers
+router.post('/story/create', async (req, res) => {
+  try {
+    const { language, title, body } = req.body;
+    if (!language || !title || !body) {
+      return res.status(400).json({ error: 'Missing required fields: language, title, body' });
+    }
+
+    // Split body on --- dividers into steps, trim and discard empty segments
+    const stepTexts = body.split(/^---$/m)
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    if (stepTexts.length === 0) {
+      return res.status(400).json({ error: 'No story content found' });
+    }
+
+    // Generate image prompts for all steps in parallel
+    const imagePrompts = await Promise.all(
+      stepTexts.map(text => generateImagePrompt({ text, language }))
+    );
+
+    // Create story record
+    const story = await createStory({ title, language, genre: 'custom', theme: '', setting: '', characterName: '' });
+    const storyId = story.id;
+    const storyFolder = await getStoryFolder(storyId);
+
+    const steps = [];
+    for (let i = 0; i < stepTexts.length; i++) {
+      const stepNumber = i + 1;
+      const imageFilename = `step-${stepNumber}.png`;
+      const imageUrl = `/api/story/${storyId}/image/${imageFilename}`;
+
+      await addStep(storyId, {
+        text: stepTexts[i],
+        imagePrompt: imagePrompts[i],
+        imagePath: imageFilename,
+        userGuidance: null,
+      });
+
+      // Fire off image generation in background
+      const imageKey = `${storyId}/${imageFilename}`;
+      imageStatus.set(imageKey, 'pending');
+      generateImage({ prompt: imagePrompts[i], outputPath: path.join(storyFolder, imageFilename) })
+        .then(() => imageStatus.set(imageKey, 'done'))
+        .catch(err => {
+          console.warn(`Background image generation failed for step ${stepNumber}:`, err.message);
+          imageStatus.set(imageKey, 'failed');
+        });
+
+      steps.push({ stepNumber, text: stepTexts[i], imageUrl });
+    }
+
+    await updateStory(storyId, { conversationHistory: [] });
+
+    res.json({ storyId, title, steps });
+  } catch (err) {
+    console.error('Story create error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // POST /api/story/new
 router.post('/story/new', async (req, res) => {

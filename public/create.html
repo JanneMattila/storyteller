@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Story — Storyteller</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#f5f0e8">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <section class="create-page">
+    <div class="create-card">
+      <h1 class="create-title">Create a Story</h1>
+      <p class="create-subtitle">Choose your language / Valitse kieli</p>
+
+      <!-- Language selector — same flags as startup wizard -->
+      <div class="language-buttons" id="lang-buttons">
+        <button class="lang-btn" data-lang="en" aria-label="English">
+          <svg class="lang-flag" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="60" height="40" rx="4" fill="#003078"/>
+            <text x="30" y="26" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="18" font-weight="bold">EN</text>
+          </svg>
+          <span class="lang-label">English</span>
+        </button>
+        <button class="lang-btn" data-lang="fi" aria-label="Suomi">
+          <svg class="lang-flag" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="60" height="40" fill="#fff"/>
+            <rect x="16" width="8" height="40" fill="#003580"/>
+            <rect y="16" width="60" height="8" fill="#003580"/>
+          </svg>
+          <span class="lang-label">Suomi</span>
+        </button>
+      </div>
+
+      <!-- Title input -->
+      <div class="create-field">
+        <label class="create-label" for="story-title">Title</label>
+        <input type="text" id="story-title" class="create-input" placeholder="Enter your story title…" maxlength="200" required>
+      </div>
+
+      <!-- Story body textarea -->
+      <div class="create-field">
+        <label class="create-label" for="story-body">Story</label>
+        <textarea id="story-body" class="create-textarea" placeholder="Write your story here…&#10;&#10;Use --- on its own line to separate story steps.&#10;Each step will get its own illustration.&#10;&#10;Example:&#10;Once upon a time, a brave fox set out on a journey.&#10;---&#10;The fox crossed a wide river and found a mysterious cave.&#10;---&#10;Inside the cave, the fox discovered a glowing crystal." required></textarea>
+      </div>
+
+      <!-- Submit button -->
+      <button id="submit-btn" class="create-submit" disabled>Create Story</button>
+
+      <!-- Progress area -->
+      <div id="progress-area" hidden>
+        <div class="create-progress-header">
+          <div class="loading-spinner"></div>
+          <span>Creating your story…</span>
+        </div>
+        <ul id="step-progress" class="step-progress-list"></ul>
+      </div>
+
+      <!-- Result area -->
+      <div id="result-area" hidden>
+        <div class="create-result">
+          <p>✨ Story created successfully!</p>
+          <a id="result-link" href="/" class="create-result-link">Open Storyteller</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="/js/create.js"></script>
+</body>
+</html>

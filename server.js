@@ -26,6 +26,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API routes
 app.use('/api', storyRoutes);
 
+// Serve /create page
+app.get('/create', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'create.html'));
+});
+
 // SPA fallback — serve index.html for non-API routes
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

@@ -81,6 +81,7 @@
       menuFullscreen: "⛶ Fullscreen",
       menuImages: "🖼️ Generate Images",
       menuReplay: "🔁 Replay Story",
+      menuCreate: "📝 Create Story",
       menuNewStory: "✨ New Story",
       replayTitle: "Replay a Story",
       replayEmpty: "No stories yet",
@@ -125,6 +126,7 @@
       menuFullscreen: "⛶ Koko näyttö",
       menuImages: "🖼️ Luo kuvia",
       menuReplay: "🔁 Toista tarina",
+      menuCreate: "📝 Luo tarina",
       menuNewStory: "✨ Uusi tarina",
       replayTitle: "Toista tarina",
       replayEmpty: "Ei tarinoita vielä",
@@ -780,6 +782,11 @@
     openReplayDialog();
   });
 
+  document.getElementById('global-create-btn').addEventListener('click', function () {
+    globalMenu.hidden = true;
+    window.location.href = '/create';
+  });
+
   document.getElementById('replay-dialog-close').addEventListener('click', function () {
     replayDialog.hidden = true;
   });
@@ -825,8 +832,14 @@
 
   var isReplaying = false;
 
-  async function replayStory(storyId) {
+  async function replayStory(storyId, skipPushState) {
     log('REPLAY', 'Starting replay for story: ' + storyId);
+
+    // Update URL so it can be shared
+    if (!skipPushState) {
+      history.pushState({ replay: storyId }, '', '/replay/' + encodeURIComponent(storyId));
+    }
+
     // Stop any ongoing activity
     stopTTSPlayback();
     if (isRecording) stopRecording();
@@ -924,11 +937,13 @@
       isReplaying = false;
       micArea.classList.remove('auto-hide');
       showMic();
+      history.replaceState(null, '', '/');
     } catch (err) {
       log('ERR', 'Replay error', err);
       isReplaying = false;
       micArea.classList.remove('auto-hide');
-      showToast(i18n[currentLanguage].errorLoadStory, 'error');
+      showToast(i18n[currentLanguage || 'en'].errorLoadStory, 'error');
+      history.replaceState(null, '', '/');
     }
   }
 
@@ -1861,5 +1876,27 @@
       submitVoiceInput();
     });
   }
+
+  // ── URL-based replay: auto-start if /replay/:id ──
+  (function checkReplayUrl() {
+    var match = window.location.pathname.match(/^\/replay\/([^\/]+)/);
+    if (match) {
+      var storyId = decodeURIComponent(match[1]);
+      log('FLOW', 'Auto-starting replay from URL: ' + storyId);
+      replayStory(storyId, true);
+    }
+  })();
+
+  window.addEventListener('popstate', function () {
+    var match = window.location.pathname.match(/^\/replay\/([^\/]+)/);
+    if (match) {
+      var storyId = decodeURIComponent(match[1]);
+      replayStory(storyId, true);
+    } else if (isReplaying) {
+      isReplaying = false;
+      stopTTSPlayback();
+      hideFullscreenImage();
+    }
+  });
 
 })();

@@ -156,3 +156,25 @@ Rewrite this as a single smooth story passage where the chosen direction natural
 
   return response.choices[0].message.content.trim();
 }
+
+/**
+ * Generate an image prompt from a story step's text.
+ * Returns a 1-sentence English description suitable for DALL-E.
+ */
+export async function generateImagePrompt({ text, language }) {
+  const response = await client.chat.completions.create({
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an image prompt writer. Given a passage of story text, write exactly ONE sentence in English describing the scene visually for an illustration. Focus on characters, setting, mood, and action. Return ONLY the prompt sentence, nothing else.',
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
+    model: MODEL,
+  });
+
+  return response.choices[0].message.content.trim();
+}

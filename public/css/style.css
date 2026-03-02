@@ -1229,3 +1229,214 @@ body.story-mode .loading-spinner {
     height: 76px;
   }
 }
+
+/* ---------- Create Story Page ---------- */
+.create-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(210, 180, 140, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(184, 150, 120, 0.25) 0%, transparent 50%),
+    #f5f0e8;
+}
+
+.create-card {
+  background: #fffdf8;
+  border-radius: 24px;
+  box-shadow:
+    0 8px 40px rgba(92, 64, 51, 0.12),
+    0 1px 3px rgba(92, 64, 51, 0.08);
+  padding: 3rem 2.5rem 2.5rem;
+  max-width: 720px;
+  width: 100%;
+  border: 1px solid rgba(210, 190, 165, 0.4);
+  animation: wizardAppear 0.5s ease both;
+}
+
+.create-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 2.4rem;
+  color: #5c4033;
+  text-align: center;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.5px;
+}
+
+.create-subtitle {
+  font-size: 1.05rem;
+  color: #8a7560;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.create-card .language-buttons {
+  margin-bottom: 2rem;
+}
+
+.lang-btn.selected {
+  outline: 3px solid #5c4033;
+  outline-offset: 2px;
+  background: #f5ede0;
+}
+
+.create-field {
+  margin-bottom: 1.25rem;
+}
+
+.create-label {
+  display: block;
+  font-family: 'Lora', Georgia, serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #5c4033;
+  margin-bottom: 0.4rem;
+}
+
+.create-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.05rem;
+  color: #3b2a1a;
+  background: #fff;
+  border: 2px solid #e0d1be;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.create-input:focus {
+  border-color: #5c4033;
+}
+
+.create-textarea {
+  width: 100%;
+  min-height: 300px;
+  padding: 1rem;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #3b2a1a;
+  background: #fff;
+  border: 2px solid #e0d1be;
+  border-radius: 12px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.create-textarea:focus {
+  border-color: #5c4033;
+}
+
+.create-textarea::placeholder {
+  color: #b8a898;
+}
+
+.create-submit {
+  display: block;
+  width: 100%;
+  padding: 0.9rem;
+  margin-top: 0.5rem;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #6b4c3b, #5c4033);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+  box-shadow: 0 4px 14px rgba(92, 64, 51, 0.25);
+}
+
+.create-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(92, 64, 51, 0.35);
+}
+
+.create-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.create-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.05rem;
+  color: #5c4033;
+}
+
+.step-progress-list {
+  list-style: none;
+  padding: 0;
+}
+
+.step-progress-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #f0ebe3;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.95rem;
+}
+
+.step-label {
+  color: #5c4033;
+  font-weight: 600;
+}
+
+.step-status.pending { color: #b8a898; }
+.step-status.generating { color: #c9a84c; }
+.step-status.done { color: #4a8c5c; }
+.step-status.failed { color: #a0522d; }
+
+.create-result {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.1rem;
+  color: #5c4033;
+}
+
+.create-result-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.7rem 2rem;
+  background: linear-gradient(135deg, #e8a87c, #d68c5e);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 999px;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 3px 10px rgba(214, 140, 94, 0.3);
+}
+
+.create-result-link:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 16px rgba(214, 140, 94, 0.45);
+}
+
+@media (max-width: 600px) {
+  .create-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .create-title {
+    font-size: 1.8rem;
+  }
+
+  .create-textarea {
+    min-height: 220px;
+  }
+}
