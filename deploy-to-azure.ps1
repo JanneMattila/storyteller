@@ -138,7 +138,7 @@ Write-Step "Configuring App Service..."
 az webapp config appsettings set `
     --resource-group $ResourceGroup `
     --name $AppName `
-    --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true NODE_ENV=production STORIES_PATH=/home/site/stories `
+    --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true NODE_ENV=production `
     --output none
 
 # Deploy .env file as app settings
