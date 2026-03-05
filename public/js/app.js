@@ -898,8 +898,9 @@
 
       // Pre-fetch all TTS audio so playback is instant
       log('REPLAY', 'Pre-fetching TTS audio for ' + mergedTexts.length + ' steps...');
-      var audioBlobs = await Promise.all(mergedTexts.map(function (text) {
-        return fetch('/api/tts', {
+      var audioBlobs = await Promise.all(mergedTexts.map(function (text, idx) {
+        var stepNum = idx + 1;
+        return fetch('/api/story/' + storyId + '/tts/' + stepNum, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: text, language: data.language || currentLanguage })
@@ -924,7 +925,7 @@
         if (audioBlobs[i]) {
           await playBlobAndWait(audioBlobs[i]);
         } else {
-          await speakTextAndWait(mergedTexts[i]);
+          await speakTextAndWait(mergedTexts[i], storyId, i + 1);
         }
         if (!isReplaying) break;
 
@@ -973,11 +974,12 @@
   }
 
   // Speak text and return a promise that resolves when playback ends
-  function speakTextAndWait(text) {
+  function speakTextAndWait(text, storyId, stepNumber) {
     return new Promise(function (resolve) {
       isSpeaking = true;
       requestWakeLock();
-      fetch('/api/tts', {
+      var ttsUrl = (storyId && stepNumber) ? '/api/story/' + storyId + '/tts/' + stepNumber : '/api/tts';
+      fetch(ttsUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text, language: currentLanguage })
@@ -1438,7 +1440,7 @@
         var contData = await contResponse.json();
         log('API', 'Story continued', { text: contData.step.text.substring(0, 80) + '...', imageUrl: contData.step.imageUrl });
         renderStoryStep(contData.step);
-        speakText(contData.step.text);
+        speakText(contData.step.text, currentStoryId, contData.step.stepNumber);
       }
     } catch (error) {
       log('ERR', 'submitVoiceInput error', error);
@@ -1456,12 +1458,13 @@
   var currentAudio = null;
   var isSpeaking = false;
 
-  function speakText(text) {
+  function speakText(text, storyId, stepNumber) {
     log('TTS', 'Speaking: "' + text.substring(0, 60) + '..."');
     isSpeaking = true;
     showMic();
     requestWakeLock();
-    fetch('/api/tts', {
+    var ttsUrl = (storyId && stepNumber) ? '/api/story/' + storyId + '/tts/' + stepNumber : '/api/tts';
+    fetch(ttsUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: text, language: currentLanguage })
@@ -1565,7 +1568,7 @@
       if (!step.imageUrl) {
         log('IMG', 'No image URL — speaking immediately');
         hideLoading();
-        speakText(step.text);
+        speakText(step.text, currentStoryId, step.stepNumber || 1);
         isFirstStep = false;
         resolve();
         return;
@@ -1579,7 +1582,7 @@
       function speakWithoutImage() {
         log('IMG', 'Proceeding without image (failed or timeout)');
         hideLoading();
-        speakText(step.text);
+        speakText(step.text, currentStoryId, step.stepNumber || 1);
         isFirstStep = false;
         resolve();
       }
@@ -1601,7 +1604,7 @@
         stepEl.appendChild(imgEl);
         storyCanvas.appendChild(stepEl);
 
-        speakText(step.text);
+        speakText(step.text, currentStoryId, step.stepNumber || 1);
         isFirstStep = false;
         resolve();
       }

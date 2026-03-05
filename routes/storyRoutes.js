@@ -296,6 +296,53 @@ router.post('/tts', async (req, res) => {
   }
 });
 
+// POST /api/story/:id/tts/:stepNumber — Cached Text to Speech per story step
+router.post('/story/:id/tts/:stepNumber', async (req, res) => {
+  try {
+    const { id, stepNumber } = req.params;
+    const step = parseInt(stepNumber, 10);
+    if (isNaN(step) || step < 1) {
+      return res.status(400).json({ error: 'Invalid step number' });
+    }
+
+    const storyFolder = await getStoryFolder(id);
+    if (!storyFolder) {
+      return res.status(404).json({ error: 'Story not found' });
+    }
+
+    const audioFile = path.join(storyFolder, `step-${step}.mp3`);
+
+    // Return cached audio if it exists
+    if (fs.existsSync(audioFile)) {
+      res.set('Content-Type', 'audio/mpeg');
+      return res.sendFile(path.resolve(audioFile));
+    }
+
+    // Generate TTS from request body text (or fall back to story step text)
+    let text = req.body?.text;
+    if (!text) {
+      const story = await getStory(id);
+      const stepData = story?.steps?.find(s => s.stepNumber === step);
+      if (!stepData) {
+        return res.status(404).json({ error: 'Step not found' });
+      }
+      text = stepData.text;
+    }
+
+    const language = req.body?.language || 'en';
+    const audioBuffer = await textToSpeech(text, language);
+
+    // Cache the audio to disk
+    fs.writeFileSync(audioFile, audioBuffer);
+
+    res.set('Content-Type', 'audio/mpeg');
+    res.send(audioBuffer);
+  } catch (err) {
+    console.error('Cached TTS error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/stt — Speech to Text
 router.post('/stt', upload.single('audio'), async (req, res) => {
   try {
