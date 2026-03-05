@@ -24,17 +24,8 @@
     <p>Storyteller requires JavaScript to run. Please enable JavaScript in your browser.</p>
   </noscript>
 
-  <!-- Global floating menu -->
-  <button id="global-menu-btn" aria-label="Menu">
-    <svg class="icon"><use href="#icon-menu"/></svg>
-  </button>
-  <div id="global-menu" hidden>
-    <button id="global-new-story-btn" data-i18n="menuNewStory">✨ New Story</button>
-    <button id="global-replay-btn" data-i18n="menuReplay">🔁 Replay Story</button>
-    <button id="global-create-btn" data-i18n="menuCreate">📝 Create Story</button>
-    <button id="global-fullscreen-btn" data-i18n="menuFullscreen">⛶ Fullscreen</button>
-    <button id="global-images-btn" data-i18n="menuImages">🖼️ ✔ Generate Images</button>
-  </div>
+  <!-- Global floating menu (injected by menu.js) -->
+  <script src="/js/menu.js"></script>
 
   <!-- Replay Story Dialog -->
   <div id="replay-dialog" hidden>
@@ -56,9 +47,7 @@
       <line x1="12" y1="18" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     </symbol>
-    <symbol id="icon-menu" viewBox="0 0 24 24">
-      <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </symbol>
+
     <symbol id="icon-close" viewBox="0 0 24 24">
       <path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     </symbol>

@@ -723,7 +723,28 @@
   const globalMenuBtn = document.getElementById('global-menu-btn');
   const globalMenu = document.getElementById('global-menu');
 
-  // ── Global Menu ──
+  // ── Global Menu (populated via shared menu.js) ──
+  initGlobalMenu([
+    { id: 'global-new-story-btn', label: '✨ New Story', dataI18n: 'menuNewStory', onClick: function () { restartWizard(); } },
+    { id: 'global-replay-btn', label: '🔁 Replay Story', dataI18n: 'menuReplay', onClick: function () { openReplayDialog(); } },
+    { id: 'global-create-btn', label: '📝 Create Story', dataI18n: 'menuCreate', href: '/create' },
+    { id: 'global-fullscreen-btn', label: '⛶ Fullscreen', dataI18n: 'menuFullscreen', onClick: function () {
+      if (document.fullscreenElement) { document.exitFullscreen(); } else { document.documentElement.requestFullscreen().catch(function () {}); }
+    }},
+    { id: 'global-images-btn', label: '🖼️ ✔ Generate Images', dataI18n: 'menuImages', onClick: function () {
+      generateImages = !generateImages;
+      updateImagesBtn();
+    }},
+  ]);
+
+  // Also stop TTS when opening menu
+  globalMenuBtn.addEventListener('click', function () {
+    if (isSpeaking) {
+      stopTTSPlayback();
+      showMic();
+    }
+  });
+
   function hideMenuButton() {
     globalMenuBtn.classList.add('auto-hide');
   }
@@ -732,60 +753,17 @@
     globalMenuBtn.classList.remove('auto-hide');
   }
 
-  globalMenuBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (isSpeaking) {
-      stopTTSPlayback();
-      showMic();
-    }
-    globalMenu.hidden = !globalMenu.hidden;
-  });
-
-  // Close menu when clicking elsewhere
-  document.addEventListener('click', function () {
-    globalMenu.hidden = true;
-  });
-  globalMenu.addEventListener('click', function (e) { e.stopPropagation(); });
-
-  document.getElementById('global-fullscreen-btn').addEventListener('click', function () {
-    globalMenu.hidden = true;
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      document.documentElement.requestFullscreen().catch(function () {});
-    }
-  });
-
-  document.getElementById('global-new-story-btn').addEventListener('click', function () {
-    globalMenu.hidden = true;
-    restartWizard();
-  });
-
   // Toggle image generation
   var imagesBtn = document.getElementById('global-images-btn');
   function updateImagesBtn() {
     var label = i18n[currentLanguage] ? i18n[currentLanguage].menuImages : 'Generate Images';
     imagesBtn.textContent = generateImages ? '🖼️ ✔ ' + label : '🖼️ ✘ ' + label;
   }
-  imagesBtn.addEventListener('click', function () {
-    generateImages = !generateImages;
-    updateImagesBtn();
-  });
 
   // Replay story dialog
   var replayDialog = document.getElementById('replay-dialog');
   var replayStoryList = document.getElementById('replay-story-list');
   var replayEmpty = document.getElementById('replay-empty');
-
-  document.getElementById('global-replay-btn').addEventListener('click', function () {
-    globalMenu.hidden = true;
-    openReplayDialog();
-  });
-
-  document.getElementById('global-create-btn').addEventListener('click', function () {
-    globalMenu.hidden = true;
-    window.location.href = '/create';
-  });
 
   document.getElementById('replay-dialog-close').addEventListener('click', function () {
     replayDialog.hidden = true;
