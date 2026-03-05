@@ -54,15 +54,14 @@ export async function createStory({ title, language, genre, theme, setting, char
 export async function getStory(storyId) {
   await ensureStoriesDir();
 
-  const entries = await fs.readdir(STORIES_DIR, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const jsonPath = path.join(STORIES_DIR, entry.name, 'story.json');
+  const names = await fs.readdir(STORIES_DIR);
+  for (const name of names) {
+    const jsonPath = path.join(STORIES_DIR, name, 'story.json');
     try {
       const data = JSON.parse(await fs.readFile(jsonPath, 'utf-8'));
       if (data.id === storyId) return data;
-    } catch (err) {
-      console.warn(`Skipping story folder "${entry.name}": ${err.message}`);
+    } catch {
+      // skip entries without valid story.json
     }
   }
   return null;
@@ -109,12 +108,11 @@ export async function addStep(storyId, { text, imagePrompt, imagePath, userGuida
 export async function listStories() {
   await ensureStoriesDir();
 
-  const entries = await fs.readdir(STORIES_DIR, { withFileTypes: true });
+  const names = await fs.readdir(STORIES_DIR);
   const stories = [];
 
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const jsonPath = path.join(STORIES_DIR, entry.name, 'story.json');
+  for (const name of names) {
+    const jsonPath = path.join(STORIES_DIR, name, 'story.json');
     try {
       const data = JSON.parse(await fs.readFile(jsonPath, 'utf-8'));
       stories.push({
@@ -127,10 +125,11 @@ export async function listStories() {
         createdAt: data.createdAt,
       });
     } catch (err) {
-      console.warn(`Skipping story folder "${entry.name}": ${err.message}`);
+      console.warn(`  Skipped "${name}": ${err.message}`);
     }
   }
 
+  console.log(`Listed ${stories.length}/${names.length} stories from ${STORIES_DIR}`);
   return stories;
 }
 

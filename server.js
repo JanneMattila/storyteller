@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import storyRoutes from './routes/storyRoutes.js';
+import { listStories } from './models/story.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -36,6 +37,12 @@ app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Storyteller server running at http://localhost:${PORT}`);
+  try {
+    const stories = await listStories();
+    console.log(`Loaded ${stories.length} stories at startup`);
+  } catch (err) {
+    console.warn(`Failed to list stories at startup: ${err.message}`);
+  }
 });
