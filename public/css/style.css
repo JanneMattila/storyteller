@@ -837,6 +837,10 @@ body.story-mode {
   pointer-events: auto;
 }
 
+#mic-btn[hidden] {
+  display: none;
+}
+
 #mic-btn:hover {
   background: #4a3328;
   transform: scale(1.05);
@@ -851,6 +855,111 @@ body.story-mode {
 #mic-btn.recording {
   background: #8b2500;
   animation: pulse 1.5s infinite;
+}
+
+/* Keyboard toggle button (right of mic) */
+#keyboard-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(92, 64, 51, 0.75);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(92, 64, 51, 0.25);
+  transition: background 0.2s, transform 0.15s;
+}
+
+#keyboard-btn[hidden] {
+  display: none;
+}
+
+#keyboard-btn:hover {
+  background: rgba(92, 64, 51, 0.95);
+  transform: scale(1.08);
+}
+
+#keyboard-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Keyboard input form (replaces buttons inside mic-area) */
+.keyboard-input-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 600px;
+  pointer-events: auto;
+}
+
+.keyboard-input-form input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(92, 64, 51, 0.3);
+  border-radius: 24px;
+  background: rgba(255, 253, 248, 0.95);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1rem;
+  color: #3b2a1a;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.keyboard-input-form input:focus {
+  border-color: #5c4033;
+}
+
+.keyboard-input-form input::placeholder {
+  color: rgba(92, 64, 51, 0.5);
+}
+
+.keyboard-input-form button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.keyboard-input-form button:hover {
+  transform: scale(1.08);
+}
+
+.keyboard-input-form .keyboard-submit-btn {
+  background: #5c4033;
+  box-shadow: 0 2px 8px rgba(92, 64, 51, 0.35);
+  font-size: 1.2rem;
+}
+
+.keyboard-input-form .keyboard-submit-btn:hover {
+  background: #4a3328;
+}
+
+.keyboard-input-form .keyboard-mic-btn {
+  background: rgba(92, 64, 51, 0.75);
+  box-shadow: 0 2px 8px rgba(92, 64, 51, 0.25);
+}
+
+.keyboard-input-form .keyboard-mic-btn:hover {
+  background: rgba(92, 64, 51, 0.95);
+}
+
+.keyboard-input-form .keyboard-mic-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
 }
 
 @keyframes pulse {
@@ -1197,6 +1306,26 @@ body.story-mode .loading-spinner {
   #undo-btn svg {
     width: 18px;
     height: 18px;
+  }
+
+  #keyboard-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  #keyboard-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .keyboard-input-form input {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .keyboard-input-form button {
+    width: 40px;
+    height: 40px;
   }
 
   #subtitle-bar {

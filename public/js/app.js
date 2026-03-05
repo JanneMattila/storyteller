@@ -33,6 +33,7 @@
   let isRecording = false;
   let finalTranscript = '';
   let undoRequested = false;
+  let preferKeyboard = false; // remember last input mode
 
   // Wizard state
   let wizardGenre = null;    // selected genre entry
@@ -85,6 +86,8 @@
       menuNewStory: "✨ New Story",
       replayTitle: "Replay a Story",
       replayEmpty: "No stories yet",
+      keyboardTooltip: "Type your input",
+      keyboardPlaceholder: "What happens next?",
     },
     fi: {
       appTitle: "Tarinankertoja",
@@ -130,6 +133,8 @@
       menuNewStory: "✨ Uusi tarina",
       replayTitle: "Toista tarina",
       replayEmpty: "Ei tarinoita vielä",
+      keyboardTooltip: "Kirjoita syöte",
+      keyboardPlaceholder: "Mitä tapahtuu seuraavaksi?",
     }
   };
 
@@ -710,6 +715,7 @@
   const micArea = document.getElementById('mic-area');
   const micBtn = document.getElementById('mic-btn');
   const undoBtn = document.getElementById('undo-btn');
+  const keyboardBtn = document.getElementById('keyboard-btn');
   const loading = document.getElementById('loading');
 
   // Wizard DOM
@@ -873,7 +879,19 @@
 
         if (step.imagePath) {
           var imgUrl = '/api/story/' + storyId + '/image/' + step.imagePath;
-          showFullscreenImage(imgUrl);
+          // Only update fullscreen image if the image actually loads
+          await new Promise(function (resolve) {
+            var testImg = new Image();
+            testImg.onload = function () {
+              showFullscreenImage(imgUrl);
+              resolve();
+            };
+            testImg.onerror = function () {
+              log('REPLAY', 'Image failed to load, keeping previous image');
+              resolve();
+            };
+            testImg.src = imgUrl;
+          });
         }
 
         if (audioBlobs[i]) {
@@ -1195,6 +1213,12 @@
     hideSubtitle();
   });
 
+  // ── Keyboard Button ──
+  keyboardBtn.addEventListener('click', function () {
+    stopTTSPlayback();
+    showKeyboardInput();
+  });
+
   async function startRecording() {
     log('STT', 'Starting recording...');
     // Stop any ongoing TTS playback
@@ -1294,6 +1318,7 @@
         isRecording = true;
         micBtn.classList.add('recording');
         undoBtn.hidden = false;
+        keyboardBtn.hidden = true;
         requestWakeLock();
         showSubtitle(i18n[currentLanguage].listening || '🎙️ ...');
       },
@@ -1309,6 +1334,7 @@
     isRecording = false;
     micBtn.classList.remove('recording');
     undoBtn.hidden = true;
+    keyboardBtn.hidden = false;
     releaseWakeLock();
     if (speechRecognizer) {
       speechRecognizer.stopContinuousRecognitionAsync(
@@ -1436,8 +1462,12 @@
         currentAudio = null;
         isSpeaking = false;
         releaseWakeLock();
-        showMic();
-        startRecording();
+        if (preferKeyboard) {
+          showKeyboardInput();
+        } else {
+          showMic();
+          startRecording();
+        }
       };
       log('TTS', 'Playing audio (' + (blob.size / 1024).toFixed(1) + ' KB)');
       currentAudio.play();
@@ -1521,10 +1551,54 @@
       var welcome = storyCanvas.querySelector('.welcome-message');
       if (welcome) welcome.remove();
 
+      // Pre-fetch TTS audio in parallel with image generation
+      var ttsUrl = (currentStoryId && (step.stepNumber || 1))
+        ? '/api/story/' + currentStoryId + '/tts/' + (step.stepNumber || 1)
+        : '/api/tts';
+      var ttsPromise = fetch(ttsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: step.text, language: currentLanguage })
+      }).then(function (response) {
+        if (!response.ok) throw new Error('TTS pre-fetch failed: ' + response.status);
+        return response.blob();
+      });
+      log('TTS', 'Pre-fetching TTS audio in parallel with image');
+
+      function playPreFetchedAudio() {
+        isSpeaking = true;
+        showMic();
+        requestWakeLock();
+        ttsPromise.then(function (blob) {
+          var url = URL.createObjectURL(blob);
+          currentAudio = new Audio(url);
+          currentAudio.onended = function () {
+            log('TTS', 'Playback ended');
+            URL.revokeObjectURL(url);
+            currentAudio = null;
+            isSpeaking = false;
+            releaseWakeLock();
+            if (preferKeyboard) {
+              showKeyboardInput();
+            } else {
+              showMic();
+              startRecording();
+            }
+          };
+          log('TTS', 'Playing pre-fetched audio (' + (blob.size / 1024).toFixed(1) + ' KB)');
+          currentAudio.play();
+        }).catch(function (err) {
+          log('ERR', 'TTS pre-fetch error', err);
+          isSpeaking = false;
+          showMic();
+          showToast(i18n[currentLanguage].errorGeneric, 'warning');
+        });
+      }
+
       if (!step.imageUrl) {
         log('IMG', 'No image URL — speaking immediately');
         hideLoading();
-        speakText(step.text, currentStoryId, step.stepNumber || 1);
+        playPreFetchedAudio();
         isFirstStep = false;
         resolve();
         return;
@@ -1538,7 +1612,7 @@
       function speakWithoutImage() {
         log('IMG', 'Proceeding without image (failed or timeout)');
         hideLoading();
-        speakText(step.text, currentStoryId, step.stepNumber || 1);
+        playPreFetchedAudio();
         isFirstStep = false;
         resolve();
       }
@@ -1560,7 +1634,7 @@
         stepEl.appendChild(imgEl);
         storyCanvas.appendChild(stepEl);
 
-        speakText(step.text, currentStoryId, step.stepNumber || 1);
+        playPreFetchedAudio();
         isFirstStep = false;
         resolve();
       }
@@ -1699,6 +1773,7 @@
     wizardGenre = null;
     wizardSetting = null;
     wizardCharacter = null;
+    preferKeyboard = false;
     storyCanvas.innerHTML = '';
     stopTTSPlayback();
     if (isRecording) stopRecording();
@@ -1741,11 +1816,92 @@
 
   // ── Mic Visibility ──
   function showMic() {
+    if (preferKeyboard) {
+      showKeyboardInput();
+      return;
+    }
+    restoreMicButtons();
     micArea.hidden = false;
   }
 
   function hideMic() {
+    // Remove keyboard input form if present
+    var existingForm = micArea.querySelector('.keyboard-input-form');
+    if (existingForm) existingForm.remove();
     micArea.hidden = true;
+  }
+
+  // Restore original mic-area buttons (undo hidden, mic visible, keyboard visible)
+  function restoreMicButtons() {
+    // Remove keyboard input form if present
+    var existingForm = micArea.querySelector('.keyboard-input-form');
+    if (existingForm) existingForm.remove();
+    micBtn.hidden = false;
+    keyboardBtn.hidden = false;
+    undoBtn.hidden = true;
+  }
+
+  // ── Keyboard Input Mode ──
+  function showKeyboardInput() {
+    preferKeyboard = true;
+    stopTTSPlayback();
+    hideSubtitle();
+
+    // Hide the standard buttons
+    micBtn.hidden = true;
+    keyboardBtn.hidden = true;
+    undoBtn.hidden = true;
+
+    // Remove existing form if any
+    var existingForm = micArea.querySelector('.keyboard-input-form');
+    if (existingForm) existingForm.remove();
+
+    // Build inline form
+    var form = document.createElement('form');
+    form.className = 'keyboard-input-form';
+
+    // Mic-switch button (back to voice mode)
+    var micSwitchBtn = document.createElement('button');
+    micSwitchBtn.type = 'button';
+    micSwitchBtn.className = 'keyboard-mic-btn';
+    micSwitchBtn.setAttribute('aria-label', i18n[currentLanguage].micTooltip);
+    micSwitchBtn.innerHTML = '<svg class="icon"><use href="#icon-mic"/></svg>';
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = currentStoryId
+      ? (i18n[currentLanguage].keyboardPlaceholder || 'What happens next?')
+      : (i18n[currentLanguage].keyboardTooltip || 'Type your input');
+    input.setAttribute('aria-label', i18n[currentLanguage].keyboardTooltip || 'Type your input');
+
+    var submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.className = 'keyboard-submit-btn';
+    submitBtn.textContent = '→';
+
+    form.appendChild(micSwitchBtn);
+    form.appendChild(input);
+    form.appendChild(submitBtn);
+    micArea.appendChild(form);
+    micArea.hidden = false;
+
+    input.focus();
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      finalTranscript = text;
+      input.value = '';
+      submitVoiceInput();
+    });
+
+    micSwitchBtn.addEventListener('click', function () {
+      preferKeyboard = false;
+      form.remove();
+      restoreMicButtons();
+      micArea.hidden = false;
+    });
   }
 
   // ── Loading Overlay ──
