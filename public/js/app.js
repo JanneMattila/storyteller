@@ -871,39 +871,15 @@
         currentLanguage = data.language || 'en';
       }
 
-      // Pre-merge narrations for all steps that have userGuidance
-      var hasGuidance = data.steps.some(function (s, idx) { return idx > 0 && s.userGuidance; });
-      var mergedTexts = data.steps.map(function (s) { return s.text; });
+      // Pre-fetch all TTS audio so playback is instant (mp3 files are already cached on disk)
       showLoading(true);
-      if (hasGuidance) {
-        log('REPLAY', 'Pre-merging narrations for steps with user guidance...');
-        try {
-          var batchResp = await fetch('/api/replay-narration/batch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              steps: data.steps,
-              language: data.language || currentLanguage
-            })
-          });
-          var batchData = await batchResp.json();
-          if (batchData.narrations && batchData.narrations.length === data.steps.length) {
-            mergedTexts = batchData.narrations;
-            log('REPLAY', 'Pre-merged ' + mergedTexts.length + ' narrations');
-          }
-        } catch (batchErr) {
-          log('ERR', 'Batch narration merge failed, using original texts', batchErr);
-        }
-      }
-
-      // Pre-fetch all TTS audio so playback is instant
-      log('REPLAY', 'Pre-fetching TTS audio for ' + mergedTexts.length + ' steps...');
-      var audioBlobs = await Promise.all(mergedTexts.map(function (text, idx) {
+      log('REPLAY', 'Pre-fetching TTS audio for ' + data.steps.length + ' steps...');
+      var audioBlobs = await Promise.all(data.steps.map(function (step, idx) {
         var stepNum = idx + 1;
         return fetch('/api/story/' + storyId + '/tts/' + stepNum, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text, language: data.language || currentLanguage })
+          body: JSON.stringify({ text: step.text, language: data.language || currentLanguage })
         }).then(function (r) { return r.ok ? r.blob() : null; })
           .catch(function () { return null; });
       }));
@@ -925,7 +901,7 @@
         if (audioBlobs[i]) {
           await playBlobAndWait(audioBlobs[i]);
         } else {
-          await speakTextAndWait(mergedTexts[i], storyId, i + 1);
+          await speakTextAndWait(step.text, storyId, i + 1);
         }
         if (!isReplaying) break;
 
@@ -938,11 +914,13 @@
       isReplaying = false;
       micArea.classList.remove('auto-hide');
       showMic();
+      showMenuButton();
       history.replaceState(null, '', '/');
     } catch (err) {
       log('ERR', 'Replay error', err);
       isReplaying = false;
       micArea.classList.remove('auto-hide');
+      showMenuButton();
       showToast(i18n[currentLanguage || 'en'].errorLoadStory, 'error');
       history.replaceState(null, '', '/');
     }
@@ -1738,6 +1716,7 @@
     log('FLOW', 'Restarting wizard');
     currentStoryId = null;
     isFirstStep = true;
+    isReplaying = false;
     generateImages = true;
     wizardGenre = null;
     wizardSetting = null;
@@ -1753,6 +1732,11 @@
     closeSidebar();
     showMenuButton();
     document.body.classList.remove('story-mode');
+
+    // Reset URL to root when navigating away from replay or other routes
+    if (window.location.pathname !== '/') {
+      history.pushState(null, '', '/');
+    }
 
     // Hide main app, show language screen
     app.hidden = true;
@@ -1899,6 +1883,8 @@
       isReplaying = false;
       stopTTSPlayback();
       hideFullscreenImage();
+      showMenuButton();
+      micArea.classList.remove('auto-hide');
     }
   });
 
