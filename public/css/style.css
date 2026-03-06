@@ -808,7 +808,9 @@ body.story-mode {
 }
 
 #undo-btn[hidden] {
-  display: none;
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 #undo-btn:hover {
@@ -875,7 +877,9 @@ body.story-mode {
 }
 
 #keyboard-btn[hidden] {
-  display: none;
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 #keyboard-btn:hover {
@@ -971,7 +975,7 @@ body.story-mode {
 /* ---------- 10. Subtitle Bar ---------- */
 #subtitle-bar {
   position: fixed;
-  bottom: 110px;
+  bottom: 130px;
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.7);
@@ -1014,7 +1018,7 @@ body.story-mode {
 }
 
 body.story-mode #loading {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.9);
   color: #ccc;
   box-shadow: none;
 }

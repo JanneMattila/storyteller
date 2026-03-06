@@ -17,7 +17,13 @@
 <body>
   <!-- Global floating menu (injected by menu.js) -->
   <script src="/js/menu.js"></script>
-  <script>initGlobalMenu([{ label: '✨ Storyteller', href: '/' }]);</script>
+  <script>initGlobalMenu([
+    { id: 'global-new-story-btn', label: '✨ New Story', dataI18n: 'menuNewStory', href: '/' },
+    { id: 'global-replay-btn', label: '🔁 Replay Story', dataI18n: 'menuReplay', href: '/' },
+    { id: 'global-fullscreen-btn', label: '⛶ Fullscreen', dataI18n: 'menuFullscreen', onClick: function () {
+      if (document.fullscreenElement) { document.exitFullscreen(); } else { document.documentElement.requestFullscreen().catch(function () {}); }
+    }},
+  ]);</script>
 
   <section class="create-page">
     <div class="create-card">

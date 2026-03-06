@@ -1002,7 +1002,7 @@
   });
 
   // ── Audience Selection → show length screen ──
-  document.querySelectorAll('.audience-btn').forEach(function (btn) {
+  audienceScreen.querySelectorAll('.audience-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       currentAudience = btn.getAttribute('data-audience');
       log('FLOW', 'Audience selected: ' + currentAudience);
@@ -1225,6 +1225,7 @@
     stopTTSPlayback();
     finalTranscript = '';
     hideSubtitle();
+    micArea.classList.remove('auto-hide');
 
     // ── Pre-check: Speech SDK available? ──
     var SpeechSDK = window.SpeechSDK;
@@ -1443,7 +1444,9 @@
   function speakText(text, storyId, stepNumber) {
     log('TTS', 'Speaking: "' + text.substring(0, 60) + '..."');
     isSpeaking = true;
-    showMic();
+    restoreMicButtons();
+    micArea.hidden = false;
+    micArea.classList.add('auto-hide');
     requestWakeLock();
     var ttsUrl = (storyId && stepNumber) ? '/api/story/' + storyId + '/tts/' + stepNumber : '/api/tts';
     fetch(ttsUrl, {
@@ -1567,7 +1570,9 @@
 
       function playPreFetchedAudio() {
         isSpeaking = true;
-        showMic();
+        restoreMicButtons();
+        micArea.hidden = false;
+        micArea.classList.add('auto-hide');
         requestWakeLock();
         ttsPromise.then(function (blob) {
           var url = URL.createObjectURL(blob);
@@ -1710,7 +1715,6 @@
 
   function hideFullscreenImage() {
     fullscreenOverlay.hidden = true;
-    document.getElementById('header').hidden = false;
   }
 
   // ── Story List (Sidebar) ──
@@ -1822,6 +1826,7 @@
     }
     restoreMicButtons();
     micArea.hidden = false;
+    micArea.classList.remove('auto-hide');
   }
 
   function hideMic() {
@@ -1846,6 +1851,7 @@
     preferKeyboard = true;
     stopTTSPlayback();
     hideSubtitle();
+    micArea.classList.remove('auto-hide');
 
     // Hide the standard buttons
     micBtn.hidden = true;
@@ -1901,6 +1907,7 @@
       form.remove();
       restoreMicButtons();
       micArea.hidden = false;
+      startRecording();
     });
   }
 
